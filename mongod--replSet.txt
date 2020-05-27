@@ -1,0 +1,37 @@
+
+启动默认节点服务
+mongod --config "C:\Program Files\MongoDB\Server\4.2\bin\mongod.cfg" --install
+net start mongodb
+
+
+单独启动
+mongod --dbpath "D:\github\kangwenjun\mongodb\data\db1" --port 27018
+mongod --dbpath "D:\github\kangwenjun\mongodb\data\db2" --port 27019
+
+集群启动
+mongod --dbpath "D:\github\kangwenjun\mongodb\data\db1" --port 27018 --replSet spock
+mongod --dbpath "D:\github\kangwenjun\mongodb\data\db2" --port 27019 --replSet spock
+rs.initiate()
+rs.add(host:port) 主服务器客户端上执行
+rs.status()
+rs.isMaster()
+rs.conf()
+
+
+根据脚本集群启动
+net stop mongodb
+
+mongod --replSet spock -f "C:\Program Files\MongoDB\Server\4.2\bin\mongod.cfg"
+mongod --replSet spock -f "C:\Program Files\MongoDB\Server\4.2\bin\mongod_27018.cfg"
+mongod --replSet spock -f "C:\Program Files\MongoDB\Server\4.2\bin\mongod_27019.cfg"
+
+cfg = {
+	_id:"spock",
+	members:[
+		{_id:0,host:"127.0.0.1:27017"},
+		{_id:2,host:"127.0.0.1:27018"},
+		{_id:3,host:"127.0.0.1:27019",arbiterOnly:true}
+	]
+}
+rs.initiate(cfg)	主服务器客户端上执行
+

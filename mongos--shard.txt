@@ -1,0 +1,35 @@
+
+步骤一：创建Sharding复制集 rs0
+mongod --port 27020 --dbpath=D:\MongoDB\shard\s0 --logpath=D:\MongoDB\shard\log\s0.log --logappend --shardsvr --replSet=rs0
+mongod --port 27021 --dbpath=D:\MongoDB\shard\s1 --logpath=D:\MongoDB\shard\log\s1.log --logappend --shardsvr --replSet=rs0
+	复制集rs0配置 mongo localhost:27020
+	登录到27020：rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27020'}, {_id: 1, host: 'localhost:27021'}]})
+mongod  --port 27030 --dbpath=D:\MongoDB\shard\s2 --logpath=D:\MongoDB\shard\log\s2.log --logappend --shardsvr --replSet=rs1
+mongod  --port 27031 --dbpath=D:\MongoDB\shard\s3 --logpath=D:\MongoDB\shard\log\s3.log --logappend --shardsvr --replSet=rs1
+	复制集rs1配置 mongo localhost:27030
+	登录到27030：rs.initiate({_id: 'rs1', members: [{_id: 0, host: 'localhost:27030'}, {_id: 1, host: 'localhost:27031'}]})
+
+步骤二： 创建Config复制集 conf
+mongod --port 27100 --dbpath=D:\MongoDB\shard\conf0 --logpath=D:\MongoDB\shard\log\conf-0.log --logappend --configsvr --replSet=conf
+mongod --port 27101 --dbpath=D:\MongoDB\shard\conf1 --logpath=D:\MongoDB\shard\log\conf-1.log --logappend --configsvr --replSet=conf
+mongod --port 27102 --dbpath=D:\MongoDB\shard\conf2 --logpath=D:\MongoDB\shard\log\conf-2.log --logappend --configsvr --replSet=conf
+	复制集conf配置
+	登录到27100：rs.initiate({_id: 'conf', members: [{_id: 0, host: 'localhost:27100'}, {_id: 1, host: 'localhost:27101'}, {_id: 2, host: 'localhost:27102'}]})
+
+步骤三： 创建Route	
+mongos --port 40000 --configdb conf/localhost:27100,localhost:27101,localhost:27102 --logpath=D:\MongoDB\shard\log\route.log --logappend
+
+
+步骤四： 登录到mongos
+mongo admin --port 40000
+
+步骤五： 添加shard节点
+db.runCommand({addshard:"rs0/localhost:27020,localhost:27021"})
+db.runCommand({addshard:"rs1/localhost:27030,localhost:27031"})
+
+
+
+步骤六： 设置分片存储的数据库  --- ??
+db.runCommand({enablesharding:"shard"})
+db.runCommand({shardcollection:"personal_info"})
+db.runCommand({shardcollection:"student_info"})
